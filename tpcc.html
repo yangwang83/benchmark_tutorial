@@ -1,0 +1,67 @@
+TPC-C simulates the database of a wholesale company. It includes
+a number of warehouses, each maintaining stocks for 100,000
+items and covering 10 districts with 3,000 customers in each. It consists
+of nine tables (WAREHOUSE, DISTRICT, CUSTOMER, HISTORY,
+ORDER, NEW-ORDER, ORDER-LINE, STOCK, and ITEM)
+and five types of transactions:
+
+New-Order: it simulates the procedure of entering an order. It
+randomly selects a district from a warehouse, randomly selects
+5 to 15 items, and randomly selects a quantity of one to ten for
+each item. For each item, it has 1% chance to order from another
+warehouse. This means, with an average of 10 items per order,
+about 9.5% of the orders need to access remote warehouses.
+This transaction retrieves and increments a D_NEXT_O_ID value
+(i.e, the next available order number) from the DISTRICT table,
+uses the value to create an order, and inserts a row in both the
+NEW-ORDER and ORDER table. Then for each item in the order,
+it retrieves the price from the ITEM table and updates the count
+in the STOCK table. Finally it inserts a new row for each item
+in the ORDER-LINE table. There is a 1% chance that the item
+is not found or its count is not sufficient, which will cause this
+transaction to rollback. The D_NEXT_O_ID value is a major
+contention point, since all New-Order transactions of the
+same district needs to update the same D_NEXT_O_ID.
+
+
+Payment: it updates the customer’s balance and reflects the payment
+on the district and warehouse sales statistics. It randomly
+selects a district from a warehouse, randomly selects a customer
+from the district, and updates the balance and payment values
+in the corresponding tables. There is a 15% chance that the
+customer’s resident warehouse is a remote warehouse.
+
+Order-Status: it queries a customer’s last order. It randomly selects
+a district from a warehouse, randomly selects a customer
+from the district, and selects the customer’s order with the largest
+order ID in the ORDER table. Then it selects matching rows from
+the ORDER-LINE table.
+
+Delivery: given a district, it selects the oldest order from the NEWORDER
+table, deletes this row, retrieves detailed information
+from the ORDER table, and then updates the ORDER-LINE table.
+It finally updates the balance in the CUSTOMER table.
+
+Stock-Level: it finds the recently sold items that have a stock level
+below a specified threshold. Given a district, it first retrieves the
+D_NEXT_O_ID from the DISTRICT table and then selects order
+lines whose order IDs are greater than or equal to D_NEXT_O_ID
+- 20 from the ORDER-LINE table. For each item in these order
+lines, this transaction checks whether its quantity in the STOCK
+table is less than a threshold.
+
+The TPC-C specification further specifies the distribution of
+these five types of transactions: New-Order 45%, Payment 43%,
+Order-Status 4%, Delivery 4%, and Stock-Level 4%. Because of randomness
+in the workload, a small deviation from such distribution
+is allowed.
+
+TPC-C adds a wait time, including a keying time and a think
+time, before each transaction to simulate the user’s behavior of
+typing keyboard and thinking before making a decision. Each
+warehouse has ten terminals, one for each district, which means
+each warehouse can have at most ten concurrent transactions.
+Note that vanilla TPC-C does not allow tuning of these parameters,
+except the number of warehouses. However, research prototypes
+often tune some of them and we analyze the reasons and
+effects of such tuning in this section.
