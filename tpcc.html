@@ -88,7 +88,7 @@ a network connection. This approach is often called "interactive transactions", 
 interacts with the database to determine what to do next. In this approach, the logic (e.g., what
     statements to run and how many iterations, etc) is performed at the client side.</p>
 
-The stored procedure mode has an obvious performance benefit: when a transaction
+<p>The stored procedure mode has an obvious performance benefit: when a transaction
 contains multiple statements, a stored procedure needs only two network I/Os, one
 from the client to the database server to start the stored procedure and one from
 the database server to the client to send the reply; interactive transactions, however,
@@ -96,21 +96,21 @@ need two network I/Os for each SQL statement, which incurs a significantly highe
 overhead. Furthermore, for a stored procedure,
 since all statements and logic are predefined, it may be possible to statically analyze
 its code to find optimization opportunities---this is widely used in research
-paper, but such static analysis is much harder, if not impossible, for interactive transactions.
+paper, but such static analysis is much harder, if not impossible, for interactive transactions.</p>
 
 <p>The TPC-C specification does not require to use stored procedures or interactive transactions.
 For the performance benefit mentioned above, most industrial companies which submit their scores
 for TPC-C use stored procedures; for the static analysis opportunities mentioned above, many research
 works use stored procedures as well. However, a study has shown that, in practice, database administrators
 are often reluctant to use stored procedures and many real-world applications use interactive transactions or
-    a mix of stored procedures and interactive transactions.</p>
+a mix of stored procedures and interactive transactions.</p>
 
 <h3> Wait time </h3>
 
 <p>TPC-C adds a wait time (i.e, keying time and think time) before each transaction to simulate a customer's
 effort to type keyboards and to think before making a decision. Wait time is required by the TPC-C
 standard, so if you want your TPC-C results to be accepted by TPC, you cannot remove wait time.
-    However, many research works do remove wait time for the reason explained below: </p>
+However, many research works do remove wait time for the reason explained below: </p>
     
     
 <p>The existence of wait time, combined with
