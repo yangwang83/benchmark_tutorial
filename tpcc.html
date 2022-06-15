@@ -1,3 +1,5 @@
+<h3> Brief summary of TPC-C </h3>
+
 <p>This article is based on the TPC-C specification at http://tpc.org/tpc_documents_current_versions/pdf/tpcc_v5.11.0.pdf.</p>
 
 <p> We provide a brief summary of TPC-C, though a reader is encouraged to read the TPC-C specification first.
@@ -148,6 +150,19 @@ is about 1
     since they are stress testing very different things.
 
 <h3> Number of warehouses (i.e., scale factor) </h3>
+
+<p> The number of warehouses has different kinds of effects on the behavior of the benchmark. </p>
+
+<p> First, obviously it determines how much data the database needs to load, which further determines
+    whether the data can fit into DRAM or has to go to a storage device. In the latter case, since
+    TPC-C is dominated by random accesses, which usually have low performance on hard drives and even SSDs,
+    I/O is mostly likely to be the bottleneck of the experiment, unless it uses a large number
+    of I/O devices to parallelize the I/Os. The introduction of persistent memory as storage devices may
+    change this conclusion but so far we don't have experiment data to confirm that.
+    Some works use a hybrid mode in which data can fit into DRAM but updates need to
+    persist to storage devices. In other words, reads happen in DRAM and writes go to storage devices.
+    In this hybrid mode, the database may organize writes into logs so that the I/O pattern becomes sequential.
+    In this case, the I/Os may or may not be the bottleneck.</p>
 
 <h3> Percentage of cross-warehouse transactions </h3>
 
