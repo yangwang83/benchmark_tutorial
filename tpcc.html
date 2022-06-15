@@ -57,13 +57,13 @@ and five types of transactions:</p>
 
 </ul>
 
-The TPC-C specification further specifies the distribution of
+<p>The TPC-C specification further specifies the distribution of
 these five types of transactions: New-Order 45%, Payment 43%,
 Order-Status 4%, Delivery 4%, and Stock-Level 4%. Because of randomness
 in the workload, a small deviation from such distribution
-is allowed.
+is allowed.</p>
 
-TPC-C adds a wait time, including a keying time and a think
+<p>TPC-C adds a wait time, including a keying time and a think
 time, before each transaction to simulate the user’s behavior of
 typing keyboard and thinking before making a decision. Each
 warehouse has ten terminals, one for each district, which means
@@ -71,11 +71,11 @@ each warehouse can have at most ten concurrent transactions.
 Note that vanilla TPC-C does not allow tuning of these parameters,
 except the number of warehouses. However, research prototypes
 often tune some of them and we analyze the reasons and
-effects of such tuning in this section.
+    effects of such tuning in this section.</p>
 
 <h3> Stored Procedures vs Interactive Transactions </h3>
 
-A database transaction usually contains multiple SQL statements. There are two
+<p>A database transaction usually contains multiple SQL statements. There are two
 typical ways to store and run a multi-statement transaction: 1) the developer
 can predefine the whole transaction, including all its statements,
 as a "stored procedure" on the database side. A stored procedure
@@ -86,7 +86,7 @@ can call a stored procedure by giving the name and the arguments of the stored p
 like calling a function; 2) a client can send SQL statements one by one to the database through
 a network connection. This approach is often called "interactive transactions", because the client
 interacts with the database to determine what to do next. In this approach, the logic (e.g., what
-statements to run and how many iterations, etc) is performed at the client side.
+    statements to run and how many iterations, etc) is performed at the client side.</p>
 
 The stored procedure mode has an obvious performance benefit: when a transaction
 contains multiple statements, a stored procedure needs only two network I/Os, one
@@ -98,14 +98,54 @@ since all statements and logic are predefined, it may be possible to statically 
 its code to find optimization opportunities---this is widely used in research
 paper, but such static analysis is much harder, if not impossible, for interactive transactions.
 
-The TPC-C specification does not require to use stored procedures or interactive transactions.
+<p>The TPC-C specification does not require to use stored procedures or interactive transactions.
 For the performance benefit mentioned above, most industrial companies which submit their scores
 for TPC-C use stored procedures; for the static analysis opportunities mentioned above, many research
 works use stored procedures as well. However, a study has shown that, in practice, database administrators
 are often reluctant to use stored procedures and many real-world applications use interactive transactions or
-a mix of stored procedures and interactive transactions.
+    a mix of stored procedures and interactive transactions.</p>
 
 <h3> Wait time </h3>
+
+<p>TPC-C adds a wait time (i.e, keying time and think time) before each transaction to simulate a customer's
+effort to type keyboards and to think before making a decision. Wait time is required by the TPC-C
+standard, so if you want your TPC-C results to be accepted by TPC, you cannot remove wait time.
+    However, many research works do remove wait time for the reason explained below: </p>
+    
+    
+<p>The existence of wait time, combined with
+the restriction that each warehouse can have only ten concurrent
+users, means that the maximal throughput we can achieve on each
+warehouse is limited. To be precise, we can compute the maximal throughput per warehouse
+as follows: given the distribution of the five types of transactions
+and the average keying and think time for each type of
+transaction (i.e., Section 5.2.5.7 in the TPC-C specification version
+5.11.0 ), we can compute the average wait time per transaction
+as (18+12) ×45%+ (3+12) ×43%+ (2+10) ×4%+ (2+5) ×4%+ (2+
+5) × 4% ≈ 21 seconds. This means the average throughput per user
+is about 1
+21 ≈ 0.048 transactions/second. Considering we can have
+10 concurrent users per warehouse, we can achieve a throughput of
+    0.48 transactions/second per warehouse.</p>
+
+<p>This limit is very low and there is no way to improve that, considering
+    wait time is required by TPC-C. Therefore, to gain a high throughput,
+    an experimenter has to use a large number of warehouses: the top TPC-C
+    results often use millions of warehouses or more. As explained in the next section,
+    such a large number of warehouses usually result in an I/O intensive and low-contention workload.</p>
+
+<p> Research works, however, often have other goals: some try to address the contentions
+    in a multi-core in-memory database; some try to reduce the contentions in distributed
+    transactions; etc. For these goals, the vanilla TPC-C, with its wait time, is not suitable.
+    Therefore, these works remove the wait time from TPC-C so that they can gain a high
+    throughput with a small number of warehouses, which result in a memory intensive and high-
+    contention workload. Of course, if a research work targets optimizing I/O performance, then
+    keeping the wait time is a natural choice.</p>
+
+<p> It is not the purpose of this article to determine whether wait time is really necessary.
+    At the very least, TPC-C numbers with wait time (i.e., numbers published on TPC-C webiste)
+    and numbers without wait time (i.e., numbers in many research papers) are not comparable, 
+    since they are stress testing very different things.
 
 <h3> Number of warehouses (i.e., scale factor) </h3>
 
