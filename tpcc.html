@@ -170,7 +170,8 @@ is about 1
 <p> Second, the size of the data may affect the efficiency of multiple components. For example, more data
     will make caching less effective; more data will generate a larger index in the database, and depending
     on the implementation (e.g., hash or tree) of the index, a larger index may make data search slower; more data may even make hard-drive I/Os
-    less efficient, since the hard drive needs to perform longer seeks.</p>
+    less efficient, since the hard drive needs to perform longer seeks. It's hard to enumerate all such effects and you may
+    run expeirments with different number of warehouses to find out.</p>
 
 <p> Finally, the number of warehouses affects the contention level of the experiment. In TPC-C, the contention level
     can be roughly defined as the number of concurrent transactions per warehouse, since only transactions touching the
