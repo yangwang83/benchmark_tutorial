@@ -75,6 +75,36 @@ effects of such tuning in this section.
 
 <h3> Stored Procedures vs Interactive Transactions </h3>
 
+A database transaction usually contains multiple SQL statements. There are two
+typical ways to store and run a multi-statement transaction: 1) the developer
+can predefine the whole transaction, including all its statements,
+as a "stored procedure" on the database side. A stored procedure
+looks like a function in most programming languages: it can take arguments
+from the caller; it can use IF or LOOP statements internally to control
+what SQL statements to run and how many iterations to run. A client, which is typically a web application,
+can call a stored procedure by giving the name and the arguments of the stored procedure, much
+like calling a function; 2) a client can send SQL statements one by one to the database through
+a network connection. This approach is often called "interactive transactions", because the client
+interacts with the database to determine what to do next. In this approach, the logic (e.g., what
+statements to run and how many iterations, etc) is performed at the client side.
+
+The stored procedure mode has an obvious performance benefit: when a transaction
+contains multiple statements, a stored procedure needs only two network I/Os, one
+from the client to the database server to start the stored procedure and one from
+the database server to the client to send the reply; interactive transactions, however,
+need two network I/Os for each SQL statement, which incurs a significantly higher network
+overhead. Furthermore, for a stored procedure,
+since all statements and logic are predefined, it may be possible to statically analyze
+its code to find optimization opportunities---this is widely used in research
+paper, but such static analysis is much harder, if not impossible, for interactive transactions.
+
+The TPC-C specification does not require to use stored procedures or interactive transactions.
+For the performance benefit mentioned above, most industrial companies which submit their scores
+for TPC-C use stored procedures; for the static analysis opportunities mentioned above, many research
+works use stored procedures as well. However, a study has shown that, in practice, database administrators
+are often reluctant to use stored procedures and many real-world applications use interactive transactions or
+a mix of stored procedures and interactive transactions.
+
 <h3> Wait time </h3>
 
 <h3> Number of warehouses (i.e., scale factor) </h3>
