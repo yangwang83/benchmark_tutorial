@@ -151,18 +151,33 @@ is about 1
 
 <h3> Number of warehouses (i.e., scale factor) </h3>
 
-<p> The number of warehouses has different kinds of effects on the behavior of the benchmark. </p>
+<p> The number of warehouses determines how much data the database needs to load,
+    which has multiple kinds of effects on the behavior of the benchmark. </p>
 
-<p> First, obviously it determines how much data the database needs to load, which further determines
-    whether the data can fit into DRAM or has to go to a storage device. In the latter case, since
+<p> First, it determines whether the data can fit into DRAM or has to go to a storage device,
+    which largely determines the bottleneck of your experiment. If all data accesses go to
+    the storage devices, since
     TPC-C is dominated by random accesses, which usually have low performance on hard drives and even SSDs,
-    I/O is mostly likely to be the bottleneck of the experiment, unless it uses a large number
+    I/O is mostly likely to be the bottleneck of the experiment, unless your experiment uses a large number
     of I/O devices to parallelize the I/Os. The introduction of persistent memory as storage devices may
-    change this conclusion but so far we don't have experiment data to confirm that.
+    change this conclusion but so far we don't have experimental results to confirm that.
     Some works use a hybrid mode in which data can fit into DRAM but updates need to
-    persist to storage devices. In other words, reads happen in DRAM and writes go to storage devices.
-    In this hybrid mode, the database may organize writes into logs so that the I/O pattern becomes sequential.
+    persist to storage devices. In other words, reads go to DRAM and writes go to storage devices.
+    In this hybrid mode, the database may log the updates rather than performing in-place updates,
+    so that the I/O pattern becomes sequential.
     In this case, the I/Os may or may not be the bottleneck.</p>
+
+<p> Second, the size of the data may affect the efficiency of multiple components. For example, more data
+    will make caching less effective; more data will generate a larger index in the database, and depending
+    on the implementation (e.g., hash or tree) of the index, a larger index may make data search slower; more data may even make hard-drive I/Os
+    less efficient, since the hard drive needs to perform longer seeks.</p>
+
+<p> Finally, the number of warehouses affects the contention level of the experiment. In TPC-C, the contention level
+    can be roughly defined as the number of concurrent transactions per warehouse, since only transactions touching the
+    same warehouse may contend (for simpliciy, let's skip distributed transactions for now). The total number of transactions
+    is usually determined by the number of worker threads at the server side or the number of customers at the client side.
+    If we consider the total number of concurrent transactions as a constant number, the contention level is inversely proportional to
+    the number of warehouses. </p>
 
 <h3> Percentage of cross-warehouse transactions </h3>
 
