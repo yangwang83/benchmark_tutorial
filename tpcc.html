@@ -182,9 +182,29 @@ is about 1
 
 <h3> Percentage of cross-warehouse transactions </h3>
 
-<h3> Network and disk I/Os </h3>
+<p> A cross-warehouse transaction will touch more than one warehouses (most likely two, but more is possible) and a local transaction
+    will only touch one. Theremore, more cross-warehouse transactions will incur a higher level of contention, since a transaction
+    touching multiple warehouses is more likely to contend with others than a transaction touching one warehouse. Furthermore, in
+    a distributed database, more cross-warehouse transactions probably will incur more network I/Os to run protocols like two-phase
+    commit (2PC). </p>
 
 <h3> Transaction types </h3>
+
+<p> As discussed above, TPC-C by default includes five types of transactions. Some works use two types (NewOrder and Payment)
+    or just one type (NewOrder). There are multiple reasons for that. First, as shown in the distribution of these five
+    types of transactions, NewOrder and Payment combined account for 87% of all transactions, so their performance can largely
+    determine the performance of TPC-C. Second, NewOrder and Payment can trigger a high level of contention (i.e., on D_NEXT_O_ID
+    and payment information), so they are good enough for testing concurrency control. Third, NewOrder and Payment do not
+    include range queries and the other three types include. For example, Order-Status needs to find the newest order
+    of a customer and Payment needs to find the oldest order of a customer. Such difference has multiple implications: 1)
+    range queries usually require a tree like index to search efficiently; when range queries are not necessary, hash index
+    might be the most efficient implementation; 2) many research works rely on static analysis to estimate whch rows a
+    transaction is going to touch before executing the transaction. For NewOrder and Payment, such estimate can be done
+    based on the argument values of the transaction (e.g. customer ID, item ID, etc). As one can imagine, range queries
+    make such analysis harder. For example, how to know the oldest order while a transaction does not provide such
+    information by itself?
+    
+<h3> Network and disk I/Os </h3>
 
 <h3> Tuning TPC-C for different purposes </h3>
 
