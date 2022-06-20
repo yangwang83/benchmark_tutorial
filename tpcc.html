@@ -198,7 +198,7 @@ is about 1
     include range queries and the other three types include. For example, Order-Status needs to find the newest order
     of a customer and Payment needs to find the oldest order of a customer. Such difference has multiple implications: 1)
     range queries usually require a tree like index to search efficiently; when range queries are not necessary, hash index
-    might be the most efficient implementation; 2) many research works rely on static analysis to estimate whch rows a
+    might be the most efficient implementation; 2) many research works rely on static analysis to estimate which rows a
     transaction is going to touch before executing the transaction. For NewOrder and Payment, such estimate can be done
     based on the argument values of the transaction (e.g. customer ID, item ID, etc). As one can imagine, range queries
     make such analysis harder. For example, how to know the oldest order while a transaction does not provide such
