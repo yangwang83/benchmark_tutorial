@@ -232,20 +232,22 @@ is about 1
 
 <p> In the following discussion, when counting the number of warehouses, I will use "large" to indicate that data
     does not fit into DRAM, use "medium" to indicate that data fit into DRAM, but the number of warehouses is much
-    larger than the number of CPU cores or worker threads, use "small" to indicate that the number of warehouses
+    larger than the number of CPU cores or worker threads, and use "small" to indicate that the number of warehouses
     is smaller than or equal to the number of CPU cores or worker threads. The absolute value of course depends on
     the size of your DRAM and the memory consumption of your database implementation.
 
-<p> If you need a storage I/O intensive benchmark, then the default TPC-C setting with a large number of warehouses might be
-    a good choice. </p>
+<ul>
+<li> If you need a storage I/O intensive benchmark, then the default TPC-C setting with a large number of warehouses might be
+    a good choice. </li>
 
-<p> If you need a network I/O intensive benchmark, you may remove wait time and use a medium number of warehouses, so that neither storage I/O nor
+<li> If you need a network I/O intensive benchmark, you may remove wait time and use a medium number of warehouses, so that neither storage I/O nor
     contention will become the bottleeck. Then using interactive transactions instead
-    of stored procedures is an easy way to trigger a lot of network I/Os. </p>
+    of stored procedures is an easy way to trigger a lot of network I/Os. </li>
 
-<p> If you need a contention heavy benchmark, the typical choice is to remove wait time and use a small number warehouses. Increasing
-the percentage of cross-warehouse transactions will increase contention level as well.</p>
+<li> If you need a contention heavy benchmark, the typical choice is to remove wait time and use a small number warehouses. Increasing
+the percentage of cross-warehouse transactions will increase contention level as well.</li>
 
-<p> If you plan to test other database mechanisms, like the performance of index update and search, you may remove wait time and use
-    a medium number of warehouses, and then use stored procedures to remove network bottlenecks. </p>
+<li> If you plan to test other database mechanisms, like the performance of index update and search, you may remove wait time and use
+    a medium number of warehouses, and then use stored procedures to remove network bottlenecks. </li>
+</ul>
 
