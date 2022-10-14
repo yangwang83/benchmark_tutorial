@@ -130,8 +130,8 @@ as (18+12) ×45%+ (3+12) ×43%+ (2+10) ×4%+ (2+5) ×4%+ (2+
 5) × 4% ≈ 21 seconds. This means the average throughput per user
 is about 1
 21 ≈ 0.048 transactions/second. Considering we can have
-10 concurrent users per warehouse, we can achieve a throughput of
-    0.48 transactions/second per warehouse.</p>
+10 concurrent users per warehouse, the maximal throughput we can achieve on a single warehouse is
+    0.48 transactions/second.</p>
 
 <p>This limit is very low and there is no way to improve that, considering
     wait time is required by TPC-C. Therefore, to gain a high throughput,
@@ -139,15 +139,15 @@ is about 1
     results often use millions of warehouses or more. As explained in the next section,
     such a large number of warehouses usually result in an I/O intensive and low-contention workload.</p>
 
-<p> Research works, however, often have other goals: some try to address the contentions
-    in a multi-core in-memory database; some try to reduce the contentions in distributed
+<p> Research works, however, often have other goals. Some try to address the contentions
+    in a multi-core in-memory database. Some try to reduce the contentions in distributed
     transactions; etc. For these goals, the vanilla TPC-C, with its wait time, is not suitable.
     Therefore, these works remove the wait time from TPC-C so that they can gain a high
-    throughput with a small number of warehouses, which result in a memory intensive and high-
-    contention workload. Of course, if a research work targets optimizing I/O performance, then
+    throughput with a small number of warehouses, which result in a memory intensive and high-contention
+    workload. Of course, if a research work targets optimizing I/O performance, then
     keeping the wait time is a natural choice.</p>
 
-<p> It is not the purpose of this article to determine whether wait time is really necessary.
+<p> It is not the purpose of this article to determine whether wait time is realistic or not.
     At the very least, TPC-C numbers with wait time (i.e., numbers published on TPC-C webiste)
     and numbers without wait time (i.e., numbers in many research papers) are not comparable, 
     since they are stress testing very different things.
