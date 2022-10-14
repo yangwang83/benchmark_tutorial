@@ -38,99 +38,19 @@ imbalance instead.<p>
 
 <h3> Number of Key-Value Pairs </h3>
 
-<p> The number of warehouses determines how much data the database needs to load,
-    which has multiple kinds of effects on the behavior of the benchmark. </p>
-
-<p> First, it determines whether the data can fit into DRAM or has to go to a storage device,
-    which largely determines the bottleneck of your experiment. If most of your data accesses go to
-    the storage devices, since
-    TPC-C is dominated by random accesses,
-    I/O is mostly likely to be the bottleneck of the experiment, unless your experiment uses a large number
-    of I/O devices to parallelize the I/Os. The introduction of persistent memory as storage devices may
-    change this conclusion but so far we don't have experimental results to confirm that.
-    Some works use a hybrid mode in which data can fit into DRAM but updates need to
-    persist to storage devices. In other words, reads go to DRAM and writes go to storage devices.
-    In this hybrid mode, the database may log the updates rather than performing in-place updates,
-    so that the I/O pattern becomes sequential.
-    In this case, the I/Os may or may not be the bottleneck.</p>
-
-<p> Second, the size of the data may affect the efficiency of multiple components. For example, more data
-    will make caching less effective; more data will generate a larger index in the database, and depending
-    on the implementation (e.g., hash or tree) of the index, a larger index may make data search slower; more data may even make hard-drive I/Os
-    less efficient, since the hard drive needs to perform longer seeks. It's hard to enumerate all such effects and you may
-    run expeirments with different number of warehouses to find out.</p>
-
-<p> Finally, the number of warehouses affects the contention level of the experiment. In TPC-C, the contention level
-    can be roughly defined as the number of concurrent transactions per warehouse, since only transactions touching the
-    same warehouse may contend (for simpliciy, let's skip distributed transactions for now). The total number of transactions
-    is usually determined by the number of worker threads at the server side or the number of customers at the client side.
-    If we consider the total number of concurrent transactions as a constant number, the contention level is inversely proportional to
-    the number of warehouses. </p>
-
-<h3> Percentage of cross-warehouse transactions </h3>
-
-<p> A cross-warehouse transaction will touch more than one warehouse (most likely two, but more is possible) and a local transaction
-    will only touch one. Theremore, more cross-warehouse transactions will incur a higher level of contention, since a transaction
-    touching multiple warehouses is more likely to contend with others than a transaction touching one warehouse. Furthermore, in
-    a distributed database, more cross-warehouse transactions probably will incur more network I/Os to run protocols like two-phase
-    commit (2PC). </p>
-
-<h3> Transaction types </h3>
-
-<p> As discussed above, TPC-C by default includes five types of transactions. Some works use two types (NewOrder and Payment)
-    or just one type (NewOrder). There are multiple reasons for that. First, as shown in the distribution of these five
-    types of transactions, NewOrder and Payment combined account for 87% of all transactions, so their performance can largely
-    determine the performance of TPC-C. Second, NewOrder and Payment can trigger a high level of contention (i.e., on D_NEXT_O_ID
-    and payment information), so they are good enough for testing concurrency control. Third, NewOrder and Payment do not
-    include range queries and the other three types include. For example, Order-Status needs to find the newest order
-    of a customer and Delivery needs to find the oldest order of a customer. Such difference has multiple implications: 1)
-    Range queries usually require a tree like index to search efficiently. When range queries are not necessary, hash index
-    might be the most efficient implementation; 2) Many research works rely on static analysis to estimate which rows a
-    transaction is going to touch before executing the transaction. For NewOrder and Payment, such estimate can be done
-    based on the argument values of the transaction (e.g. customer ID, item ID, etc). As one can imagine, range queries
-    make such analysis harder. For example, how to know the oldest order while a transaction does not provide such
-    information by itself?
+<p> The effect of this parameter is much like the number of warehouses in TPC-C. If the number is large
+  so that data does not fit into DRAM, of course that will significantly change the performance profile.
+  Even if all data fit into DRAM, larger number of key-value pairs may affect the speed of a tree-like index,
+  page table lookup efficiency, etc.<p>
     
-<h3> Network and disk I/Os </h3>
+<p> In theory, contention level may be affected by the number of KVs. In practice, however, we find such
+  impact is not significant. The reason is as follows: For workload with low skewness (e.g., uniform distribution),
+  although changing the number of KVs will change the contention level significantly, the contention level will
+  not reach a level that matters to throughput, unless we use, say, tens of key-value pairs. For highly skewed workload
+  (e.g. zipf 0.99), the contention level is high, but it does not change proportionally with the number of key-value
+  pairs. For example, with zipf 0.99,  changing from one million KVs to 100 million KVs will only decrease the frequency
+  to access the hottest key from 6.5% to 4.8% and decrease the frequency to access the hottest 32 keys from 27% to 20%.
+  Therefore, in both cases,the change of contention level caused by the change of the number of KVs usually has no significant
+  impact on performance. </p>
 
-<p> Different systems vary significantly in terms of the network and disk I/Os they involve. On the one extreme, for
-    a single-node in-memory database, if we run clients on the same machine or even in the same process of the database
-    server, then there will be no network or disk I/Os. On the other extreme, if we have a distributed, replicated, and
-    persistent database, and we run remote clients using interactive transactions, this case will incur many network
-    and disk I/Os. These I/Os can affect both the throughput and latency of your system.</p>
-
-<p> As a general principle, the maximal throughput of a system is determined by the slowest component in the system.
-    Therefore, the software settings (e.g., persist data or not, replicate data or not, etc) and hardware
-    settings (e.g., 10G Ethernet or 100G Infiniband, hard drive or SSD, etc) will interact to determine the bottleneck.</p>
-
-<p> There is one exception to the above principle. If the workload is highly contended, then the maximal throughput of
-    your hardware may not matter. Instead, the latency of your hardware may be more important. Imagine an extreme case
-    that all transactions contend on a single row and thus only one can execute at a time. In this case, the maximal throughput
-    of your system will be equal to 1/(transaction latency), and transaction latency will be largely affected by network
-    and disk latencies. </p>
-
-<h3> Tuning TPC-C for different purposes </h3>
-
-<p> First, keep in mind that the TPC-C specification only allows the tuning of the number of warehouses, so if you expect
-    your TPC-C results to be accepted by the TPC website, don't tune other parameters. </p>
-
-<p> In the following discussion, when counting the number of warehouses, I will use "large" to indicate that data
-    does not fit into DRAM, use "medium" to indicate that data fit into DRAM, but the number of warehouses is much
-    larger than the number of CPU cores or worker threads, and use "small" to indicate that the number of warehouses
-    is smaller than or equal to the number of CPU cores or worker threads. The absolute value of course depends on
-    the size of your DRAM and the memory consumption of your database implementation.
-
-<ul>
-<li> If you need a storage I/O intensive benchmark, then the default TPC-C setting with a large number of warehouses might be
-    a good choice. </li>
-
-<li> If you need a network I/O intensive benchmark, you may remove wait time and use a medium number of warehouses, so that neither storage I/O nor
-    contention will become the bottleeck. Then using interactive transactions instead
-    of stored procedures is an easy way to trigger a lot of network I/Os. </li>
-
-<li> If you need a contention heavy benchmark, the typical choice is to remove wait time and use a small number warehouses. Increasing
-the percentage of cross-warehouse transactions will increase contention level as well.</li>
-
-<li> If you plan to test other database mechanisms, like the performance of index update and search, you may remove wait time and use
-    a medium number of warehouses, and then use stored procedures to remove network bottlenecks. </li>
-</ul>
+<h3> Read/Write Ratio </h3>
