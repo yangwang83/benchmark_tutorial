@@ -1,6 +1,6 @@
 <h3> Brief summary of TPC-C </h3>
 
-<p>This article is based on the TPC-C specification at http://tpc.org/tpc_documents_current_versions/pdf/tpcc_v5.11.0.pdf.</p>
+<p>This article is based on <a href="https://www.tpc.org/tpc_documents_current_versions/pdf/tpc-c_v5.11.0.pdf">TPC-C 5.11</a> </p>
 
 <p> We provide a brief summary of TPC-C, though a reader is encouraged to read the TPC-C specification first.
 TPC-C simulates the database of a wholesale company. It includes
@@ -12,7 +12,7 @@ and five types of transactions:</p>
 
 <ul>
 
-    <li>New-Order: it simulates the procedure of entering an order. It
+    <li>New-Order: It simulates the procedure of entering an order. It
     randomly selects a district from a warehouse, randomly selects
     5 to 15 items, and randomly selects a quantity of one to ten for
     each item. For each item, it has 1% chance to order from another
@@ -31,25 +31,27 @@ and five types of transactions:</p>
     same district needs to update the same D_NEXT_O_ID.</li>
 
 
-    <li>Payment: it updates the customer’s balance and reflects the payment
-    on the district and warehouse sales statistics. It randomly
+    <li>Payment: It updates the customer’s balance and reflects the payment
+    on the district and warehouse sales statistics (i.e., year-to-date amount). It randomly
     selects a district from a warehouse, randomly selects a customer
     from the district, and updates the balance and payment values
     in the corresponding tables. There is a 15% chance that the
-    customer’s resident warehouse is a remote warehouse.</li>
+    customer’s resident warehouse is a remote warehouse.
+    The per-warehouse statistics is another major contention point.
+    </li>
 
-    <li>Order-Status: it queries a customer’s last order. It randomly selects
+    <li>Order-Status: It queries a customer’s last order. It randomly selects
     a district from a warehouse, randomly selects a customer
     from the district, and selects the customer’s order with the largest
     order ID in the ORDER table. Then it selects matching rows from
     the ORDER-LINE table.</li>
 
-    <li>Delivery: given a district, it selects the oldest order from the NEWORDER
+    <li>Delivery: Given a district, it selects the oldest order from the NEW-ORDER
     table, deletes this row, retrieves detailed information
     from the ORDER table, and then updates the ORDER-LINE table.
     It finally updates the balance in the CUSTOMER table.</li>
 
-    <li>Stock-Level: it finds the recently sold items that have a stock level
+    <li>Stock-Level: It finds the recently sold items that have a stock level
     below a specified threshold. Given a district, it first retrieves the
     D_NEXT_O_ID from the DISTRICT table and then selects order
     lines whose order IDs are greater than or equal to D_NEXT_O_ID
