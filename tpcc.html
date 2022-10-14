@@ -209,6 +209,22 @@ is about 1
     
 <h3> Network and disk I/Os </h3>
 
+<p> Different systems vary significantly in terms of the network and disk I/Os they involve. On the one extreme, for
+    a single-node in-memory database, if we run clients on the same machine or even in the same process of the database
+    server, then there will be no network or disk I/Os. On the other extreme, if we have a distributed, replicated, and
+    persistent database, and we run remote clients using interactive transactions, this case will incur many network
+    and disk I/Os. These I/Os can affect both the throughput and latency of your system.</p>
+
+<p> As a general principle, the maximal throughput of a system is determined by the slowest component in the system.
+    Therefore, the software settings (e.g., persist data or not, replicate data or not, etc) and hardware
+    settings (e.g., 10G Ethernet or 100G Infiniband, hard drive or SSD, etc) will interact to determine the bottleneck.</p>
+
+<p> There is one exception to the above principle. If the workload is highly contended, then the maximal throughput of
+    your hardware may not matter. Instead, the latency of your hardware may be more important. Imagine an extreme case
+    that all transactions contend on a single row and thus only one can execute at a time. In this case, the maximal throughput
+    of your system will be equal to 1/(transaction latency), and transaction latency will be largely affected by network
+    and disk latencies. </p>
+
 <h3> Tuning TPC-C for different purposes </h3>
 
 <p> First, keep in mind that the TPC-C specification only allows the tuning of the number of warehouses, so if you expect
