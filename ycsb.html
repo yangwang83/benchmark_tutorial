@@ -56,14 +56,14 @@ imbalance instead.<p>
 <h3> Read/Write Ratio </h3>
 
 <p> When considering a single operation in DRAM, read and update usually do not have much difference in performce, since they both
-  involve the same index lookup and DRAM read/write speed is not much different. Insert may be more expensive since
+  involve the same index lookup and DRAM read/write speed is not much different (PMEM is a different story). Insert is typically more expensive since
   it needs to allocate memory and may need to evict an existing key-value pair.</p>
 
-<p> When considering concurrent operations, Read operations do not contend but Write operations may contend, so more Write
+<p> When considering concurrent operations, Read operations do not contend but Write operations may contend, so more Writes
   may cause a performance degradation. </p>
 
 <p> In addition, in a replicated and/or persistent key-value store, since a Write needs to be replicated and/or persisted and
-  a Read usually does not, more Write may cause a performance degradation as well. </p>
+  a Read usually does not, more Writes may cause a performance degradation as well. </p>
 
 
 <h3> Tuning YCSB for Different Purposes </h3>
@@ -77,10 +77,10 @@ stress test key lookup, DRAM speed, etc; high contention is likely
 to stress test concurrency control, if any.</p> 
   
 <p> If either network bandwidth or packet rate is the bottleneck, a
-higher write ratio will incur more packets if the system needs to
-replicate writes but has no significant impact if the system does
-  not replicate writes.</p>
+higher Write ratio will incur more packets if the system needs to
+replicate Writes but has no significant impact if the system does
+  not replicate Writes.</p>
 
-<p> If contention is the bottleneck, a higher write ratio or a higher
+<p> If contention is the bottleneck, a higher Write ratio or a higher
 skewness will incur a higher contention. The number of KVs does not have a significant
   impact. </p>
